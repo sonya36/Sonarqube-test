@@ -61,10 +61,36 @@ const isUserOpen = ref(false)
         <div class="relative">
           <button @click="isUserOpen = !isUserOpen" class="flex items-center gap-3 group">
               <span class="text-xs font-bold text-gray-400 group-hover:text-white transition-colors hidden lg:block">{{ $page.props.auth.user.name }}</span>
-              <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-black ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all">
-                  {{ $page.props.auth.user.name.charAt(0) }}
+              <div class="w-8 h-8 rounded-full ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all overflow-hidden bg-indigo-600 flex items-center justify-center text-xs font-black">
+                  <img
+                      v-if="$page.props.auth.user.avatar"
+                      :src="'/storage/' + $page.props.auth.user.avatar"
+                      class="h-full w-full object-cover"
+                      :alt="$page.props.auth.user.name"
+                  />
+                  <span v-else>{{ $page.props.auth.user.name.charAt(0).toUpperCase() }}</span>
               </div>
           </button>
+
+          <!-- User Dropdown -->
+          <div v-if="isUserOpen" class="absolute top-full right-0 mt-2 w-48 bg-[#161616] border border-[#262626] rounded-xl shadow-2xl p-2 z-[60] animate-in fade-in zoom-in-95 duration-200">
+            <Link 
+                :href="route('profile.edit')"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+            >
+                <Settings class="w-4 h-4" />
+                Profile
+            </Link>
+            <Link 
+                :href="route('logout')" 
+                method="post" 
+                as="button"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-left"
+            >
+                <LogOut class="w-4 h-4" />
+                Log Out
+            </Link>
+          </div>
         </div>
       </div>
     </header>

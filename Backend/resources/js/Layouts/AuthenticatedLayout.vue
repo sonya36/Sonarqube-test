@@ -12,9 +12,9 @@ const showingNavigationDropdown = ref(false);
 
 <template>
     <div>
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="min-h-screen bg-[#0f0f0f] text-[#ededed]">
             <nav
-                class="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
+                class="border-b border-[#262626] bg-[#0f0f0f]/80 backdrop-blur-md sticky top-0 z-50"
             >
                 <!-- Primary Navigation Menu -->
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -50,12 +50,29 @@ const showingNavigationDropdown = ref(false);
                                         <span class="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                                                class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white p-1 pe-3 text-sm font-medium text-gray-500 transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
                                             >
-                                                {{ $page.props.auth.user.name }}
+                                                <div class="h-8 w-8 shrink-0 overflow-hidden rounded-full ring-2 ring-indigo-500/20">
+                                                    <img
+                                                        v-if="$page.props.auth.user.avatar"
+                                                        :src="'/storage/' + $page.props.auth.user.avatar"
+                                                        class="h-full w-full object-cover"
+                                                        :alt="$page.props.auth.user.name"
+                                                    />
+                                                    <div
+                                                        v-else
+                                                        class="flex h-full w-full items-center justify-center bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                                                    >
+                                                        {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
+                                                    </div>
+                                                </div>
+
+                                                <span class="max-w-[100px] truncate">
+                                                    {{ $page.props.auth.user.name }}
+                                                </span>
 
                                                 <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
+                                                    class="h-4 w-4 opacity-50"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -152,7 +169,23 @@ const showingNavigationDropdown = ref(false);
                     <div
                         class="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600"
                     >
-                        <div class="px-4">
+                    <div class="flex items-center px-4">
+                        <div class="shrink-0">
+                            <img
+                                v-if="$page.props.auth.user.avatar"
+                                class="h-10 w-10 rounded-full object-cover ring-2 ring-indigo-500/20"
+                                :src="'/storage/' + $page.props.auth.user.avatar"
+                                :alt="$page.props.auth.user.name"
+                            />
+                            <div
+                                v-else
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-base font-bold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                            >
+                                {{ $page.props.auth.user.name.charAt(0).toUpperCase() }}
+                            </div>
+                        </div>
+
+                        <div class="ms-3">
                             <div
                                 class="text-base font-medium text-gray-800 dark:text-gray-200"
                             >
@@ -162,6 +195,7 @@ const showingNavigationDropdown = ref(false);
                                 {{ $page.props.auth.user.email }}
                             </div>
                         </div>
+                    </div>
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')">
@@ -181,7 +215,7 @@ const showingNavigationDropdown = ref(false);
 
             <!-- Page Heading -->
             <header
-                class="bg-white shadow dark:bg-gray-800"
+                class="bg-[#0f0f0f]/80 backdrop-blur-md border-b border-[#262626]"
                 v-if="$slots.header"
             >
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

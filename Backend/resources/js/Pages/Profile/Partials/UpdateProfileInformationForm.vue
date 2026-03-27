@@ -15,25 +15,63 @@ const user = usePage().props.auth.user;
 const form = useForm({
     name: user.name,
     email: user.email,
+    avatar: null as File | null,
 });
 </script>
 
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+            <h2 class="text-lg font-bold text-white">
                 Profile Information
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p class="mt-1 text-sm text-gray-400">
                 Update your account's profile information and email address.
             </p>
         </header>
 
         <form
-            @submit.prevent="form.patch(route('profile.update'))"
+            @submit.prevent="form.transform((data) => ({ ...data, _method: 'patch' })).post(route('profile.update'), { forceFormData: true })"
             class="mt-6 space-y-6"
         >
+            <!-- Avatar Section -->
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <img
+                        v-if="user.avatar"
+                        :src="'/storage/' + user.avatar"
+                        class="h-24 w-24 rounded-full object-cover ring-2 ring-indigo-500 shadow-lg"
+                        alt="Profile Avatar"
+                    />
+                    <div
+                        v-else
+                        class="flex h-24 w-24 items-center justify-center rounded-full bg-indigo-100 ring-2 ring-indigo-500 shadow-lg dark:bg-indigo-900"
+                    >
+                        <span class="text-2xl font-bold text-indigo-600 dark:text-indigo-300">
+                            {{ user.name.charAt(0).toUpperCase() }}
+                        </span>
+                    </div>
+                </div>
+
+                <div>
+                    <InputLabel for="avatar" value="Profile Photo" />
+                    <input
+                        id="avatar"
+                        type="file"
+                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-gray-700 dark:file:text-gray-300"
+                        @input="(e) => {
+                            const target = e.target as HTMLInputElement;
+                            if (target.files) form.avatar = target.files[0];
+                        }"
+                    />
+                    <InputError class="mt-2" :message="form.errors.avatar" />
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Max size: 2MB (JPG, PNG)
+                    </p>
+                </div>
+            </div>
+
             <div>
                 <InputLabel for="name" value="Name" />
 
@@ -87,7 +125,7 @@ const form = useForm({
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                <PrimaryButton :disabled="form.processing">Save Changes</PrimaryButton>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -99,7 +137,7 @@ const form = useForm({
                         v-if="form.recentlySuccessful"
                         class="text-sm text-gray-600 dark:text-gray-400"
                     >
-                        Saved.
+                        Changes saved successfully.
                     </p>
                 </Transition>
             </div>
