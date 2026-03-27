@@ -33,7 +33,29 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = $request->user();
+
+        // Debug logging (check storage/logs/laravel.log)
+        \Illuminate\Support\Facades\Log::info('User login successful', [
+            'id' => $user->id,
+            'role' => $user->role,
+            'isAdmin' => $user->isAdmin(),
+        ]);
+
+        // Check if user is active
+        if ($user->status !== 'active') {
+            Auth::guard('web')->logout();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account is deactivated. Please contact an administrator.',
+            ]);
+        }
+
+        // Redirect based on role
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('dashboard');
     }
 
     /**
