@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
 import { Search, ChevronDown, Grid, Settings, LogOut } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
@@ -12,14 +13,14 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#0f0f0f] text-[#ededed] font-sans selection:bg-indigo-500/30">
+  <div class="min-h-screen bg-[#0f0f0f] text-[#ededed] font-['Inter',_sans-serif] selection:bg-indigo-500/30">
     <Head title="SILVER Documentations" />
 
     <!-- Top Navigation Bar -->
     <header class="h-14 border-b border-[#262626] bg-[#0f0f0f]/80 backdrop-blur-md sticky top-0 z-50 px-6 flex items-center justify-between">
       <div class="flex items-center gap-10">
-        <Link href="/" class="flex items-center gap-2 group shrink-0">
-          <span class="text-lg font-bold tracking-tight text-white transition-colors group-hover:text-indigo-400">SILVER Documentations</span>
+        <Link href="/" class="flex items-center gap-2.5 group shrink-0">
+          <ApplicationLogo size="sm" show-name />
         </Link>
 
         <!-- Applications Selector (Section) -->
@@ -132,6 +133,8 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 /* Custom Scrollbar for the dark theme */
 ::-webkit-scrollbar {
   width: 6px;

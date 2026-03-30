@@ -2,14 +2,21 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+    ]);
+})->name('welcome');
 
 Route::get('/documentations', function () {
     return Inertia::render('Dashboard');
