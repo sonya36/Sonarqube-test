@@ -85,7 +85,7 @@ const deleteUser = (user: any) => {
 </script>
 
 <template>
-  <DocsLayout>
+  <DocsLayout wide>
     <Head title="User Management - Admin Portal" />
 
     <template #left-sidebar>

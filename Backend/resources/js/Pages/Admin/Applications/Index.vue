@@ -78,7 +78,7 @@ const deleteApp = (app: any) => {
 </script>
 
 <template>
-  <DocsLayout>
+  <DocsLayout wide>
     <Head title="Application Management - Admin Portal" />
 
     <template #left-sidebar>

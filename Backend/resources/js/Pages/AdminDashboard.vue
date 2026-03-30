@@ -63,7 +63,7 @@ const chartData = props.docsPerApp.map(d => ({
 </script>
 
 <template>
-  <DocsLayout>
+  <DocsLayout wide>
     <!-- Top Nav Applications (Now in Dropdown) -->
     <template #top-nav-apps>
         <div class="space-y-1">

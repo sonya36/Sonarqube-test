@@ -9,6 +9,12 @@ const page = usePage()
 const isAppsOpen = ref(false)
 const isUserOpen = ref(false)
 
+const props = withDefaults(defineProps<{
+  wide?: boolean
+}>(), {
+  wide: false
+})
+
 const navApplications = computed(() => (page.props as any).applications ?? [])
 </script>
 
@@ -119,13 +125,13 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
 
       <!-- Main Content Area -->
       <main class="flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#0f0f0f]">
-        <div class="max-w-4xl mx-auto w-full p-8 lg:p-12">
+        <div :class="cn('w-full p-8 lg:p-12', !wide && 'max-w-4xl mx-auto')">
             <slot />
         </div>
       </main>
 
       <!-- Right Sidebar (TOC) -->
-      <aside class="w-64 border-l border-[#262626] bg-[#0f0f0f] shrink-0 hidden xl:flex flex-col p-8 sticky top-14 h-full">
+      <aside v-if="!wide && $slots['right-sidebar']" class="w-64 border-l border-[#262626] bg-[#0f0f0f] shrink-0 hidden xl:flex flex-col p-8 sticky top-14 h-full">
         <slot name="right-sidebar" />
       </aside>
     </div>
