@@ -47,7 +47,7 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
               <Link
                 v-for="app in navApplications"
                 :key="app.id"
-                :href="route('app.show', app.slug)"
+                :href="route('app.show.doc', { appSlug: app.slug })"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all group"
               >
                 <div class="w-2 h-2 rounded-full shrink-0 bg-indigo-400" />
@@ -71,49 +71,71 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
       </div>
 
       <div class="flex items-center gap-8">
-        <!-- Admin Link -->
-        <Link 
-            v-if="$page.props.auth.user.role === 'admin'"
-            :href="route('admin.dashboard')" 
-            class="text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-colors border-r border-[#262626] pr-8"
-        >
-            Admin Portal
-        </Link>
-        
-        <div class="relative">
-          <button @click="isUserOpen = !isUserOpen" class="flex items-center gap-3 group">
-              <span class="text-xs font-bold text-gray-400 group-hover:text-white transition-colors hidden lg:block">{{ $page.props.auth.user.name }}</span>
-              <div class="w-8 h-8 rounded-full ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all overflow-hidden bg-indigo-600 flex items-center justify-center text-xs font-black">
-                  <img
-                      v-if="$page.props.auth.user.avatar"
-                      :src="'/storage/' + $page.props.auth.user.avatar"
-                      class="h-full w-full object-cover"
-                      :alt="$page.props.auth.user.name"
-                  />
-                  <span v-else>{{ $page.props.auth.user.name.charAt(0).toUpperCase() }}</span>
-              </div>
-          </button>
+        <!-- Authorized User Links -->
+        <template v-if="$page.props.auth && $page.props.auth.user">
+            <!-- Admin Link -->
+            <Link 
+                v-if="$page.props.auth.user.role === 'admin'"
+                :href="route('admin.dashboard')" 
+                class="text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-colors border-r border-[#262626] pr-8"
+            >
+                Admin Portal
+            </Link>
+            
+            <!-- User Link -->
+            <Link 
+                v-if="$page.props.auth.user.role === 'user'"
+                :href="route('user.documents.index')" 
+                class="text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white transition-colors border-r border-[#262626] pr-8"
+            >
+                User Portal
+            </Link>
+            
+            <div class="relative">
+              <button @click="isUserOpen = !isUserOpen" class="flex items-center gap-3 group">
+                  <span class="text-xs font-bold text-gray-400 group-hover:text-white transition-colors hidden lg:block">{{ $page.props.auth.user.name }}</span>
+                  <div class="w-8 h-8 rounded-full ring-2 ring-indigo-500/20 group-hover:ring-indigo-500/40 transition-all overflow-hidden bg-indigo-600 flex items-center justify-center text-xs font-black">
+                      <img
+                          v-if="$page.props.auth.user.avatar"
+                          :src="'/storage/' + $page.props.auth.user.avatar"
+                          class="h-full w-full object-cover"
+                          :alt="$page.props.auth.user.name"
+                      />
+                      <span v-else>{{ $page.props.auth.user.name.charAt(0).toUpperCase() }}</span>
+                  </div>
+              </button>
 
-          <!-- User Dropdown -->
-          <div v-if="isUserOpen" class="absolute top-full right-0 mt-2 w-48 bg-[#161616] border border-[#262626] rounded-xl shadow-2xl p-2 z-[60] animate-in fade-in zoom-in-95 duration-200">
+              <!-- User Dropdown -->
+              <div v-if="isUserOpen" class="absolute top-full right-0 mt-2 w-48 bg-[#161616] border border-[#262626] rounded-xl shadow-2xl p-2 z-[60] animate-in fade-in zoom-in-95 duration-200">
+                <Link 
+                    :href="route('profile.edit')"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                >
+                    <Settings class="w-4 h-4" />
+                    Profile
+                </Link>
+                <Link 
+                    :href="route('logout')" 
+                    method="post" 
+                    as="button"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-left"
+                >
+                    <LogOut class="w-4 h-4" />
+                    Log Out
+                </Link>
+              </div>
+            </div>
+        </template>
+        
+        <!-- Guest Login Button -->
+        <template v-else>
             <Link 
-                :href="route('profile.edit')"
-                class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                :href="route('login')" 
+                class="text-xs font-bold uppercase tracking-wider text-white hover:text-indigo-300 transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg"
             >
-                <Settings class="w-4 h-4" />
-                Profile
+                Log In
             </Link>
-            <Link 
-                :href="route('logout')" 
-                method="post" 
-                as="button"
-                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-left"
-            >
-                <LogOut class="w-4 h-4" />
-                Log Out
-            </Link>
-          </div>
-        </div>
+        </template>
       </div>
     </header>
 

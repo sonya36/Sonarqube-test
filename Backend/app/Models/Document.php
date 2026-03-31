@@ -11,6 +11,7 @@ class Document extends Model
 
     protected $fillable = [
         'title',
+        'sub_title',
         'slug',
         'content',
         'excerpt',
@@ -66,5 +67,13 @@ class Document extends Model
     public function versions()
     {
         return $this->hasMany(DocumentVersion::class);
+    }
+
+    /**
+     * Sections within this document (sub-title + content blocks).
+     */
+    public function sections()
+    {
+        return $this->hasMany(DocumentSection::class)->orderBy('sort_order');
     }
 }

@@ -18,19 +18,29 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
-Route::get('/documentations', function () {
-    return Inertia::render('Dashboard');
+Route::get('/dashboard', function () {
+    $user = Auth::user();
+    if ($user->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('user.documents.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/docs/{slug}', function ($slug) {
-    return Inertia::render('Dashboard');
-})->middleware(['auth'])->name('app.show');
+Route::get('/docs/{appSlug}/{docSlug?}', [\App\Http\Controllers\DocumentationController::class, 'show'])
+    ->name('app.show.doc');
 
 Route::middleware('auth')->group(function () {
+    Route::resource('documents', \App\Http\Controllers\User\DocumentController::class)->names('user.documents');
+    Route::get('documents/{document}/sections', [\App\Http\Controllers\User\DocumentSectionController::class, 'index'])->name('user.sections.index');
+    Route::post('documents/{document}/sections', [\App\Http\Controllers\User\DocumentSectionController::class, 'store'])->name('user.sections.store');
+    Route::put('documents/{document}/sections/{section}', [\App\Http\Controllers\User\DocumentSectionController::class, 'update'])->name('user.sections.update');
+    Route::delete('documents/{document}/sections/{section}', [\App\Http\Controllers\User\DocumentSectionController::class, 'destroy'])->name('user.sections.destroy');
+
     Route::get('/admin', [AdminDashboardController::class, 'index'])->middleware('admin')->name('admin.dashboard');
     Route::resource('admin/users', \App\Http\Controllers\Admin\UserController::class)->middleware('admin')->names('admin.users');
     Route::resource('admin/applications', \App\Http\Controllers\Admin\ApplicationController::class)->middleware('admin')->names('admin.applications');
     Route::resource('admin/documents', \App\Http\Controllers\Admin\DocumentController::class)->middleware('admin')->names('admin.documents');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

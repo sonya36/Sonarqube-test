@@ -31,6 +31,7 @@ class DocumentController extends Controller
                 'slug' => $doc->slug,
                 'application' => $doc->application ? [
                     'name' => $doc->application->name,
+                    'slug' => $doc->application->slug,
                     'color' => $doc->application->color ?? 'bg-indigo-500',
                 ] : null,
                 'author' => $doc->user ? $doc->user->name : 'Unknown',

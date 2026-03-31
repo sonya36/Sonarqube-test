@@ -29,13 +29,12 @@ class DocumentPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, int $applicationId): bool
+    public function create(User $user): bool
     {
         if ($user->role === 'admin') return true;
 
-        $appAssignment = $user->applications()->where('applications.id', $applicationId)->first();
-        
-        return $appAssignment && in_array($appAssignment->pivot->permission, ['write', 'admin']);
+        // User must be assigned to at least one application to create
+        return $user->applications()->exists();
     }
 
     /**
@@ -45,12 +44,8 @@ class DocumentPolicy
     {
         if ($user->role === 'admin') return true;
 
-        // User can update their own document if they still have write/admin access to the application
-        if ($document->user_id !== $user->id) return false;
-
-        $appAssignment = $user->applications()->where('applications.id', $document->application_id)->first();
-        
-        return $appAssignment && in_array($appAssignment->pivot->permission, ['write', 'admin']);
+        // User can update their own document
+        return $document->user_id === $user->id;
     }
 
     /**

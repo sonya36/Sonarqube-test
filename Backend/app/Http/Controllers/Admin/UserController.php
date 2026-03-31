@@ -45,7 +45,7 @@ class UserController extends Controller
             $applicationsSync = [];
             foreach ($request->applications as $appId) {
                 $applicationsSync[$appId] = [
-                    'permission' => 'read', 
+                    'permission' => 'write', 
                     'assigned_by' => auth()->id(), 
                     'assigned_at' => now()
                 ];
@@ -82,7 +82,7 @@ class UserController extends Controller
             $applicationsSync = [];
             foreach ($request->applications as $appId) {
                 $applicationsSync[$appId] = [
-                    'permission' => 'read', 
+                    'permission' => 'write', 
                     'assigned_by' => auth()->id(), 
                     'assigned_at' => now()
                 ];
