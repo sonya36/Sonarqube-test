@@ -43,7 +43,7 @@ const adminMenu = [
   { name: 'Dashboard', icon: LayoutGrid, active: true, href: route('admin.dashboard') },
   { name: 'User Management', icon: Users, active: false, href: route('admin.users.index') },
   { name: 'Application Management', icon: Layers, active: false, href: route('admin.applications.index') },
-  { name: 'System Logs', icon: Activity }
+  { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') }
 ]
 
 const stats = [

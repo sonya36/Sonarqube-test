@@ -3,7 +3,7 @@ import DocsLayout from '@/Layouts/DocsLayout.vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
 import { 
-  Users, Layers, LayoutGrid, ShieldCheck, Activity,
+  Users, Layers, LayoutGrid, ShieldCheck, Activity, FileText,
   Plus, Edit2, Trash2, CheckCircle2, XCircle, Wrench
 } from 'lucide-vue-next'
 import { ref } from 'vue'
@@ -20,7 +20,7 @@ const adminMenu = [
   { name: 'Dashboard', icon: LayoutGrid, active: false, href: route('admin.dashboard') },
   { name: 'User Management', icon: Users, active: false, href: route('admin.users.index') },
   { name: 'Application Management', icon: Layers, active: true, href: route('admin.applications.index') },
-  { name: 'System Logs', icon: Activity }
+  { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') }
 ]
 
 const showModal = ref(false)

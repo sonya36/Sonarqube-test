@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin', [AdminDashboardController::class, 'index'])->middleware('admin')->name('admin.dashboard');
     Route::resource('admin/users', \App\Http\Controllers\Admin\UserController::class)->middleware('admin')->names('admin.users');
     Route::resource('admin/applications', \App\Http\Controllers\Admin\ApplicationController::class)->middleware('admin')->names('admin.applications');
+    Route::resource('admin/documents', \App\Http\Controllers\Admin\DocumentController::class)->middleware('admin')->names('admin.documents');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
