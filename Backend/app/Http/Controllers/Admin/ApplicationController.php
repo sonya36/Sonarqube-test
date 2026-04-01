@@ -25,6 +25,7 @@ class ApplicationController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|in:active,inactive',
+            'color' => 'nullable|string|max:50',
         ]);
 
         $baseSlug = Str::slug($request->name);
@@ -41,7 +42,7 @@ class ApplicationController extends Controller
             'slug' => $slug,
             'description' => $request->description,
             'icon' => 'grid', // Default icon
-            'color' => '#6366f1', // Default hex color
+            'color' => $request->color ?? 'indigo', // Default tailwind color
             'status' => $request->status,
             'sort_order' => 0,
             'created_by' => auth()->id(),
@@ -56,6 +57,7 @@ class ApplicationController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|in:active,inactive',
+            'color' => 'nullable|string|max:50',
         ]);
 
         if ($request->name !== $application->name) {
@@ -73,6 +75,7 @@ class ApplicationController extends Controller
         $application->name = $request->name;
         $application->description = $request->description;
         $application->status = $request->status;
+        $application->color = $request->color ?? $application->color;
         $application->save();
 
         return redirect()->back()->with('success', 'Application updated successfully.');

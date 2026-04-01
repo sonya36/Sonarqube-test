@@ -20,6 +20,7 @@ class AdminDashboardController extends Controller
             return [
                 'label' => $app->name,
                 'count' => $app->documents_count,
+                'color' => $app->color ?? 'indigo',
             ];
         });
 
@@ -33,6 +34,7 @@ class AdminDashboardController extends Controller
                     'id' => $doc->id,
                     'title' => $doc->title,
                     'app' => $doc->application ? $doc->application->name : 'N/A',
+                    'appColor' => $doc->application ? ($doc->application->color ?? 'indigo') : 'gray',
                     'author' => $doc->user ? $doc->user->name : 'Unknown',
                     'time' => $doc->created_at->diffForHumans(),
                     'status' => $doc->status,

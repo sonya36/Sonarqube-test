@@ -31,7 +31,18 @@ const form = useForm({
     name: '',
     description: '',
     status: 'active',
+    color: 'indigo',
 })
+
+const colorOptions = [
+    { name: 'Indigo', value: 'indigo', bg: 'bg-indigo-500' },
+    { name: 'Emerald', value: 'emerald', bg: 'bg-emerald-500' },
+    { name: 'Rose', value: 'rose', bg: 'bg-rose-500' },
+    { name: 'Amber', value: 'amber', bg: 'bg-amber-500' },
+    { name: 'Sky', value: 'sky', bg: 'bg-sky-500' },
+    { name: 'Violet', value: 'violet', bg: 'bg-violet-500' },
+    { name: 'Fuchsia', value: 'fuchsia', bg: 'bg-fuchsia-500' },
+]
 
 const openCreateModal = () => {
     editingApp.value = null
@@ -47,6 +58,7 @@ const openEditModal = (app: any) => {
     form.name = app.name
     form.description = app.description
     form.status = app.status
+    form.color = app.color || 'indigo'
     showModal.value = true
 }
 
@@ -136,8 +148,12 @@ const deleteApp = (app: any) => {
                      <tr v-for="app in props.applications" :key="app.id" class="hover:bg-[#1f1f1f] transition-colors group">
                          <td class="px-6 py-4 w-96">
                              <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 mt-0.5 rounded-xl border border-[#262626] flex flex-shrink-0 items-center justify-center text-white font-bold shadow-inner" :class="app.color ? app.color + '/10' : 'bg-[#262626]'">
-                                    <Layers class="w-4 h-4" :class="app.color ? `text-${app.color.replace('bg-','')}` : 'text-gray-400'" />
+                                <div 
+                                    class="w-10 h-10 mt-0.5 rounded-xl border border-[#262626] flex flex-shrink-0 items-center justify-center text-white font-bold shadow-inner transition-all group-hover:scale-110" 
+                                    :style="`background-color: var(--tw-color-${app.color || 'indigo'}-500)`"
+                                    :class="app.color ? `bg-${app.color}-500/10` : 'bg-[#262626]'"
+                                >
+                                    <Layers class="w-4 h-4" :class="app.color ? `text-${app.color}-400` : 'text-gray-400'" />
                                 </div>
                                 <div class="flex flex-col pr-4">
                                     <span class="text-white font-bold group-hover:text-indigo-300 transition-colors">{{ app.name }}</span>
@@ -231,12 +247,34 @@ const deleteApp = (app: any) => {
                     <select 
                         id="status" 
                         v-model="form.status" 
-                        class="mt-1 block w-full bg-[#1a1a1a] border-[#333] text-white rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-3"
+                        class="mt-1 block w-full bg-[#1a1a1a] border-[#333] text-white rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm h-10 px-3 transition-all"
                     >
                         <option value="active">Active (Operational)</option>
                         <option value="inactive">Inactive</option>
                     </select>
                     <InputError class="mt-2 text-red-400" :message="form.errors.status" />
+                </div>
+
+                <!-- Color Selection -->
+                <div>
+                    <InputLabel value="Brand Color" class="text-gray-300 mb-2" />
+                    <div class="grid grid-cols-7 gap-2">
+                        <button
+                            v-for="color in colorOptions"
+                            :key="color.value"
+                            type="button"
+                            @click="form.color = color.value"
+                            :class="cn(
+                                'w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center',
+                                color.bg,
+                                form.color === color.value ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-50 hover:opacity-100 hover:scale-105'
+                            )"
+                            :title="color.name"
+                        >
+                            <CheckCircle2 v-if="form.color === color.value" class="w-4 h-4 text-white" />
+                        </button>
+                    </div>
+                    <InputError class="mt-2 text-red-400" :message="form.errors.color" />
                 </div>
 
                 <!-- Actions -->

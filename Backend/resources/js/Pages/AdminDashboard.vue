@@ -59,7 +59,8 @@ const maxDocs = Math.max(...props.docsPerApp.map(d => d.count), 1)
 const chartData = props.docsPerApp.map(d => ({
   label: d.label,
   value: (d.count / maxDocs) * 100,
-  count: d.count
+  count: d.count,
+  color: d.color
 }))
 </script>
 
@@ -74,7 +75,7 @@ const chartData = props.docsPerApp.map(d => ({
               href="#"
               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all group"
             >
-              <div :class="cn('w-2 h-2 rounded-full', app.color)" />
+              <div :class="cn('w-2 h-2 rounded-full transition-all group-hover:scale-125', `bg-${app.color || 'indigo'}-500`)" />
               {{ app.name }}
             </Link>
         </div>
@@ -168,14 +169,18 @@ const chartData = props.docsPerApp.map(d => ({
             <div 
               v-for="item in chartData" 
               :key="item.label"
-              class="flex-1 flex flex-col items-center gap-3 group"
+              class="flex-1 h-full flex flex-col items-center gap-3 group"
             >
-              <div class="relative w-full flex-1 flex items-end justify-center">
+              <div class="relative w-full flex-1 flex items-end justify-center pt-8">
                   <div 
-                    class="w-full max-w-[40px] bg-indigo-500/10 group-hover:bg-indigo-500 transition-all rounded-t-lg relative"
+                    class="w-full max-w-[40px] transition-all rounded-t-lg relative"
+                    :class="`bg-${item.color || 'indigo'}-500/20 group-hover:bg-${item.color || 'indigo'}-500`"
                     :style="{ height: `${item.value}%` }"
                   >
-                     <div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#262626] text-white text-[9px] font-bold px-1.5 py-0.5 rounded pointer-events-none">
+                     <div 
+                        class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-white text-[9px] font-bold px-1.5 py-0.5 rounded pointer-events-none"
+                        :class="`bg-${item.color || 'indigo'}-600`"
+                     >
                          {{ item.count }}
                      </div>
                   </div>
@@ -199,13 +204,16 @@ const chartData = props.docsPerApp.map(d => ({
               class="flex items-center justify-between group cursor-pointer"
             >
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-[#1a1a1a] border border-[#262626] flex items-center justify-center text-indigo-400 group-hover:border-indigo-500/50 transition-all">
+                <div 
+                    class="w-9 h-9 rounded-xl bg-[#1a1a1a] border border-[#262626] flex items-center justify-center transition-all shadow-inner group-hover:scale-110"
+                    :class="`text-${doc.appColor}-400 group-hover:border-${doc.appColor}-500/50`"
+                >
                   <FileText class="w-4 h-4" />
                 </div>
                 <div class="flex flex-col">
                   <span class="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">{{ doc.title }}</span>
                   <div class="flex items-center gap-2 text-[10px] text-gray-500">
-                      <span class="font-bold text-indigo-500/70">{{ doc.app }}</span>
+                      <span class="font-bold transition-colors" :class="`text-${doc.appColor}-500/70 group-hover:text-${doc.appColor}-400`">{{ doc.app }}</span>
                       <span>•</span>
                       <span>{{ doc.author }}</span>
                   </div>
@@ -218,7 +226,7 @@ const chartData = props.docsPerApp.map(d => ({
                   </span>
                   <div :class="cn(
                       'px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter',
-                      doc.status === 'Published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
+                      doc.status.toLowerCase() === 'published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
                   )">
                       {{ doc.status }}
                   </div>

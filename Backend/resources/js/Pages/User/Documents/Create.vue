@@ -4,6 +4,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { FileText, Save, ArrowLeft, Loader2, LayoutGrid, Users, Layers } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
+import { cn } from '@/lib/utils'
 
 const page = usePage()
 const user = computed(() => (page.props.auth as any).user)

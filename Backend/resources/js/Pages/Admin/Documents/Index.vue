@@ -146,10 +146,18 @@ const statsItems = [
                      </tr>
                  </thead>
                  <tbody class="divide-y divide-[#262626]">
-                     <tr v-for="doc in props.documents.data" :key="doc.id" class="hover:bg-[#1f1f1f] transition-colors group">
+                     <tr 
+                         v-for="doc in props.documents.data" 
+                         :key="doc.id" 
+                         class="hover:bg-[#1f1f1f] transition-all group relative border-l-4 border-transparent"
+                         :class="doc.application ? `border-l-${doc.application.color || 'indigo'}-500 hover:bg-${doc.application.color || 'indigo'}-500/[0.03]` : ''"
+                     >
                          <td class="px-6 py-4">
                              <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-[#1a1a1a] border border-[#262626] flex flex-shrink-0 items-center justify-center text-indigo-400 group-hover:border-indigo-500/50 transition-all shadow-inner">
+                                <div 
+                                    class="w-9 h-9 rounded-xl bg-[#1a1a1a] border border-[#262626] flex flex-shrink-0 items-center justify-center transition-all shadow-inner group-hover:scale-110"
+                                    :class="doc.application ? `text-${doc.application.color}-400 group-hover:border-${doc.application.color}-500/50` : 'text-indigo-400 group-hover:border-indigo-500/50'"
+                                >
                                     <FileText class="w-4 h-4" />
                                 </div>
                                 <div class="flex flex-col">
@@ -160,8 +168,12 @@ const statsItems = [
                          </td>
                          <td class="px-6 py-4">
                              <div v-if="doc.application" class="flex items-center gap-2">
-                                 <div :class="cn('w-2 h-2 rounded-full', doc.application.color)" />
-                                 <span class="text-xs font-bold text-gray-300">{{ doc.application.name }}</span>
+                                 <div 
+                                    class="px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all"
+                                    :class="`bg-${doc.application.color || 'indigo'}-500/10 text-${doc.application.color || 'indigo'}-400 border-${doc.application.color || 'indigo'}-500/20`"
+                                 >
+                                     {{ doc.application.name }}
+                                 </div>
                              </div>
                              <span v-else class="text-xs text-gray-600 italic">No Application</span>
                          </td>
