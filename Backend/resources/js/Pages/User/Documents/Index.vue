@@ -3,9 +3,13 @@ import DocsLayout from '@/Layouts/DocsLayout.vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
 import { 
-  FileText, Plus, Edit2, Trash2, CheckCircle2, Clock, Eye, Activity, LayoutList
+  FileText, Plus, Edit2, Trash2, CheckCircle2, Clock, Eye, Activity, LayoutList, LayoutGrid, Users, Layers
 } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+const user = computed(() => (page.props.auth as any).user)
 
 const props = defineProps<{
   documents: {
@@ -25,9 +29,21 @@ const props = defineProps<{
   };
 }>()
 
-const userMenu = [
-  { name: 'My Documents', icon: FileText, active: true, href: route('user.documents.index') }
-]
+const userMenu = computed(() => {
+  if (user.value?.role === 'admin') {
+    return [
+      { name: 'Dashboard', icon: LayoutGrid, active: false, href: route('admin.dashboard') },
+      { name: 'User Management', icon: Users, active: false, href: route('admin.users.index') },
+      { name: 'Application Management', icon: Layers, active: false, href: route('admin.applications.index') },
+      { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') },
+      { name: 'My Documents', icon: FileText, active: true, href: route('user.documents.index') }
+    ]
+  }
+
+  return [
+    { name: 'My Documents', icon: FileText, active: true, href: route('user.documents.index') }
+  ]
+})
 
 const search = ref(props.filters.search || '')
 
@@ -60,7 +76,9 @@ const statsItems = [
     <template #left-sidebar>
       <div class="p-6 space-y-8">
         <section>
-          <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">User Portal</h3>
+          <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">
+              {{ user?.role === 'admin' ? 'Admin Portal' : 'User Portal' }}
+          </h3>
           <nav class="space-y-1">
             <Link 
               v-for="item in userMenu" 

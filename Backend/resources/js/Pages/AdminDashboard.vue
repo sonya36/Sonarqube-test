@@ -43,7 +43,8 @@ const adminMenu = [
   { name: 'Dashboard', icon: LayoutGrid, active: true, href: route('admin.dashboard') },
   { name: 'User Management', icon: Users, active: false, href: route('admin.users.index') },
   { name: 'Application Management', icon: Layers, active: false, href: route('admin.applications.index') },
-  { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') }
+  { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') },
+  { name: 'My Documents', icon: FileText, active: false, href: route('user.documents.index') }
 ]
 
 const stats = [
@@ -122,10 +123,10 @@ const chartData = props.docsPerApp.map(d => ({
           <p class="text-gray-500 text-sm">Comprehensive overview of system users and documentations.</p>
         </div>
         <div class="flex items-center gap-2">
-            <button class="flex items-center gap-2 px-3 py-1.5 h-9 bg-white text-black rounded-lg text-xs font-bold hover:bg-gray-200 transition-all shadow-lg shadow-white/5">
+            <Link :href="route('user.documents.create')" class="flex items-center gap-2 px-3 py-1.5 h-9 bg-white text-black rounded-lg text-xs font-bold hover:bg-gray-200 transition-all shadow-lg shadow-white/5">
                 <Plus class="w-3.5 h-3.5" />
                 New Document
-            </button>
+            </Link>
         </div>
       </div>
 

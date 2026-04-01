@@ -21,7 +21,8 @@ const adminMenu = [
   { name: 'Dashboard', icon: LayoutGrid, active: false, href: route('admin.dashboard') },
   { name: 'User Management', icon: Users, active: true, href: route('admin.users.index') },
   { name: 'Application Management', icon: Layers, active: false, href: route('admin.applications.index') },
-  { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') }
+  { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') },
+  { name: 'My Documents', icon: FileText, active: false, href: route('user.documents.index') }
 ]
 
 const showModal = ref(false)

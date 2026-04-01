@@ -1,10 +1,7 @@
 <template>
     <div :class="['brand-logo-wrapper', size]">
-        <div class="brand-icon">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-svg">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <div class="brand-icon overflow-hidden">
+            <img src="/images/logo.jpg" alt="SILVER Docs Logo" class="w-full h-full object-cover">
         </div>
         <span v-if="showName" class="brand-name">SILVER <span class="brand-accent">Docs</span></span>
     </div>
@@ -31,31 +28,25 @@ withDefaults(defineProps<{
 }
 
 .brand-icon {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: white; /* Matches the white background of the provided artwork */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 20px rgba(99,102,241,0.4);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 /* ── Sizes ── */
 .sm .brand-icon {
     width: 32px; height: 32px;
-    border-radius: 8px;
-}
-.sm .brand-svg {
-    width: 16px; height: 16px;
+    border-radius: 6px;
 }
 .sm .brand-name {
     font-size: 16px;
 }
 
 .md .brand-icon {
-    width: 44px; height: 44px;
-    border-radius: 12px;
-}
-.md .brand-svg {
-    width: 22px; height: 22px;
+    width: 48px; height: 48px;
+    border-radius: 10px;
 }
 .md .brand-name {
     font-size: 20px;
@@ -66,12 +57,9 @@ withDefaults(defineProps<{
     gap: 20px;
 }
 .lg .brand-icon {
-    width: 64px; height: 64px;
-    border-radius: 16px;
-    box-shadow: 0 0 35px rgba(99,102,241,0.5);
-}
-.lg .brand-svg {
-    width: 32px; height: 32px;
+    width: 120px; height: 120px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
 .lg .brand-name {
     font-size: 32px;
@@ -79,9 +67,6 @@ withDefaults(defineProps<{
 }
 
 /* ── Colors ── */
-.brand-svg {
-  color: #fff;
-}
 
 .brand-name {
   font-weight: 900;

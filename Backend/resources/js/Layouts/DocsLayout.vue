@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
-import { Search, ChevronDown, Grid, Settings, LogOut } from 'lucide-vue-next'
+import { Search, ChevronDown, Grid, Settings, LogOut, FileText } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 
 const page = usePage()
@@ -137,6 +137,13 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
 
               <!-- User Dropdown -->
               <div v-if="isUserOpen" class="absolute top-full right-0 mt-2 w-48 bg-[#161616] border border-[#262626] rounded-xl shadow-2xl p-2 z-[60] animate-in fade-in zoom-in-95 duration-200">
+                <Link 
+                    :href="route('user.documents.index')"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                >
+                    <FileText class="w-4 h-4" />
+                    My Documents
+                </Link>
                 <Link 
                     :href="route('profile.edit')"
                     class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all"

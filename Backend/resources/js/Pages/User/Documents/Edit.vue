@@ -3,8 +3,13 @@ import DocsLayout from '@/Layouts/DocsLayout.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
 import { 
-  FileText, Save, ArrowLeft, Loader2
+  FileText, Save, ArrowLeft, Loader2, LayoutGrid, Users, Layers
 } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+const user = computed(() => (page.props.auth as any).user)
 
 const props = defineProps<{
   document: {
@@ -26,6 +31,22 @@ const form = useForm({
     content: props.document.content || ''
 })
 
+const userMenu = computed(() => {
+  if (user.value?.role === 'admin') {
+    return [
+      { name: 'Dashboard', icon: LayoutGrid, active: false, href: route('admin.dashboard') },
+      { name: 'User Management', icon: Users, active: false, href: route('admin.users.index') },
+      { name: 'Application Management', icon: Layers, active: false, href: route('admin.applications.index') },
+      { name: 'Documentation Management', icon: FileText, active: false, href: route('admin.documents.index') },
+      { name: 'My Documents', icon: FileText, active: true, href: route('user.documents.index') }
+    ]
+  }
+
+  return [
+    { name: 'My Documents', icon: FileText, active: true, href: route('user.documents.index') }
+  ]
+})
+
 const submit = () => {
     form.put(route('user.documents.update', props.document.id))
 }
@@ -38,15 +59,32 @@ const submit = () => {
     <template #left-sidebar>
       <div class="p-6 space-y-8">
         <section>
-          <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">Navigation</h3>
+          <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4 px-2">
+              {{ user?.role === 'admin' ? 'Admin Portal' : 'User Portal' }}
+          </h3>
           <nav class="space-y-1">
             <Link 
-              :href="route('user.documents.index')"
-              class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all group"
+              v-for="item in userMenu" 
+              :key="item.name"
+              :href="item.href || '#'"
+              :class="cn(
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group',
+                item.active ? 'bg-indigo-500/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
+              )"
             >
-              <ArrowLeft class="w-4 h-4 shrink-0" />
-              Back to Documents
+              <component :is="item.icon" class="w-4 h-4 shrink-0" />
+              {{ item.name }}
             </Link>
+            
+            <div class="pt-4 mt-4 border-t border-[#262626]">
+                <Link 
+                  :href="route('user.documents.index')"
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all group"
+                >
+                  <ArrowLeft class="w-4 h-4 shrink-0" />
+                  Back to Documents
+                </Link>
+            </div>
           </nav>
         </section>
       </div>

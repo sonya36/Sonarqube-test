@@ -32,7 +32,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         
-        $user->fill($request->validated());
+        $user->fill($request->safe()->except('avatar'));
 
         if ($request->hasFile('avatar')) {
             // Delete old avatar if it exists
