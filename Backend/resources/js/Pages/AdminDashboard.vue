@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DocsLayout from '@/Layouts/DocsLayout.vue'
-import { Link } from '@inertiajs/vue3'
+import { usePage, Link } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
 import { 
   Users, 
@@ -16,7 +16,10 @@ import {
   CalendarDays,
   Clock
 } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const page = usePage()
+const sharedApplications = computed(() => (page.props.applications as any[]) || [])
 
 const props = defineProps<{
   stats: {
@@ -25,12 +28,12 @@ const props = defineProps<{
     activeApplications: number;
     uptime: string;
   };
-  applications: Array<{ name: string; slug: string; color: string }>;
-  docsPerApp: Array<{ label: string; count: number }>;
+  docsPerApp: Array<{ label: string; count: number; color?: string }>;
   recentDocuments: Array<{
     id: number;
     title: string;
     app: string;
+    appColor: string;
     author: string;
     time: string;
     status: string;
@@ -70,9 +73,9 @@ const chartData = props.docsPerApp.map(d => ({
     <template #top-nav-apps>
         <div class="space-y-1">
             <Link 
-              v-for="app in props.applications" 
+              v-for="app in sharedApplications" 
               :key="app.name"
-              href="#"
+              :href="app.slug ? route('app.show.doc', { appSlug: app.slug }) : '#'"
               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all group"
             >
               <div :class="cn('w-2 h-2 rounded-full transition-all group-hover:scale-125', `bg-${app.color || 'indigo'}-500`)" />

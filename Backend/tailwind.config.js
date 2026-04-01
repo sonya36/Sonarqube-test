@@ -9,7 +9,16 @@ export default {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
     ],
-
+    safelist: [
+        {
+          pattern: /(bg|text|border)-(indigo|red|emerald|orange|blue|rose|amber|teal|cyan|sky|violet|fuchsia|pink|slate|gray)-(400|500|600)/,
+          variants: ['hover', 'group-hover', 'group-hover/hover'],
+        },
+        {
+          pattern: /(bg|text|border)-(indigo|red|emerald|orange|blue|rose|amber|teal|cyan|sky|violet|fuchsia|pink|slate|gray)-500\/[0-9]{1,2}/,
+          variants: ['hover', 'group-hover'],
+        }
+    ],
     theme: {
         extend: {
             fontFamily: {

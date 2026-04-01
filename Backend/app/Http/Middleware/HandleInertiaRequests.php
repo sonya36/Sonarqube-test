@@ -36,18 +36,16 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'applications' => function (Request $request) {
-                $user = $request->user();
-                $query = Application::query();
-                
-                // If not admin, only show active applications
-                if (!$user || $user->role !== 'admin') {
-                    $query->where('status', 'active');
-                }
-                
-                return $query->select('id', 'name', 'slug', 'color', 'status')
-                    ->orderBy('sort_order')
-                    ->orderBy('name')
-                    ->get();
+                return $request->user()?->isAdmin()
+                    ? Application::select('id', 'name', 'slug', 'color', 'status')
+                        ->orderBy('sort_order', 'asc')
+                        ->orderBy('name', 'asc')
+                        ->get()
+                    : Application::where('status', 'active')
+                        ->select('id', 'name', 'slug', 'color')
+                        ->orderBy('sort_order', 'asc')
+                        ->orderBy('name', 'asc')
+                        ->get();
             },
         ];
     }

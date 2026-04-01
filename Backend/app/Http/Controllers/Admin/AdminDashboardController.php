@@ -41,22 +41,13 @@ class AdminDashboardController extends Controller
                 ];
             });
 
-        $applications = Application::all()->map(function ($app) {
-            return [
-                'name' => $app->name,
-                'slug' => $app->slug,
-                'color' => $app->color ?? 'bg-indigo-500',
-            ];
-        });
-
         return Inertia::render('AdminDashboard', [
             'stats' => [
                 'totalUsers' => number_format($totalUsers),
                 'totalDocuments' => number_format($totalDocuments),
-                'activeApplications' => Application::count(),
-                'uptime' => '99.9%', // Placeholder for now
+                'activeApplications' => $applicationsData->count(),
+                'uptime' => '99.9%',
             ],
-            'applications' => $applications,
             'docsPerApp' => $applicationsData,
             'recentDocuments' => $recentDocuments,
         ]);
