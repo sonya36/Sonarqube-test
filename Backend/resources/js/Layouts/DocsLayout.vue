@@ -1,13 +1,53 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import { Head, Link, usePage } from '@inertiajs/vue3'
-import { Search, ChevronDown, Grid, Settings, LogOut, FileText } from 'lucide-vue-next'
+import { Search, ChevronDown, Grid, Settings, LogOut, FileText, Loader2, CornerDownLeft } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
+import axios from 'axios'
 
 const page = usePage()
 const isAppsOpen = ref(false)
 const isUserOpen = ref(false)
+
+const searchQuery = ref('')
+const searchResults = ref<any[]>([])
+const isSearching = ref(false)
+const isSearchOpen = ref(false)
+let searchTimeout: any = null
+
+watch(searchQuery, (query) => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+    
+    if (query.length < 2) {
+        searchResults.value = []
+        isSearching.value = false
+        isSearchOpen.value = false
+        return
+    }
+
+    isSearching.value = true
+    isSearchOpen.value = true
+
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await axios.get(route('docs.search'), {
+                params: { query }
+            })
+            searchResults.value = response.data
+        } catch (error) {
+            console.error('Search failed:', error)
+        } finally {
+            isSearching.value = false
+        }
+    }, 300)
+})
+
+const onBlur = () => {
+    setTimeout(() => {
+        isSearchOpen.value = false
+    }, 200)
+}
 
 const props = withDefaults(defineProps<{
   wide?: boolean
@@ -84,12 +124,65 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
       </div>
 
       <div class="flex-1 max-w-sm mx-10 relative group hidden sm:block">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
-        <input 
-          type="text" 
-          placeholder="Search docs..." 
-          class="w-full h-9 bg-[#1a1a1a] border border-[#262626] rounded-lg pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all placeholder:text-gray-600"
-        >
+        <div class="relative">
+            <template v-if="isSearching">
+                <Loader2 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 animate-spin" />
+            </template>
+            <template v-else>
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-indigo-400 transition-colors" />
+            </template>
+            <input 
+                v-model="searchQuery"
+                type="text" 
+                @focus="isSearchOpen = searchQuery.length >= 2"
+                @blur="onBlur"
+                placeholder="Search docs..." 
+                class="w-full h-9 bg-[#1a1a1a] border border-[#262626] rounded-lg pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all placeholder:text-gray-600"
+            >
+        </div>
+
+        <!-- Search Results Dropdown -->
+        <div v-if="isSearchOpen" class="absolute top-full left-0 right-0 mt-2 bg-[#161616] border border-[#262626] rounded-xl shadow-2xl overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
+            <div class="p-2 max-h-[400px] overflow-y-auto">
+                <div v-if="searchResults.length > 0" class="space-y-1">
+                    <div class="px-3 py-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center justify-between">
+                        Results
+                        <span class="text-[9px] lowercase opacity-50 font-normal">Found {{ searchResults.length }}</span>
+                    </div>
+                    <Link
+                        v-for="result in searchResults"
+                        :key="result.id"
+                        :href="route('app.show.doc', { appSlug: result.app_slug, docSlug: result.slug })"
+                        class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all group"
+                        @click="isSearchOpen = false; searchQuery = ''"
+                    >
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div :class="cn('w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 text-gray-400 group-hover:text-indigo-400 transition-colors shrink-0')">
+                                <FileText class="w-4 h-4" />
+                            </div>
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-sm font-bold text-gray-200 group-hover:text-white truncate">{{ result.title }}</span>
+                                <div class="flex items-center gap-2">
+                                    <div :class="cn('w-1.5 h-1.5 rounded-full', result.app_color || 'bg-indigo-500')" />
+                                    <span class="text-[10px] text-gray-500 font-medium">{{ result.app_name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <CornerDownLeft class="w-3 h-3 text-gray-700 opacity-0 group-hover:opacity-100 transition-all" />
+                    </Link>
+                </div>
+                <div v-else-if="!isSearching" class="py-12 flex flex-col items-center justify-center text-gray-600 gap-3">
+                    <Search class="w-8 h-8 opacity-20" />
+                    <p class="text-xs font-medium">No documents matching your search.</p>
+                </div>
+            </div>
+            <div class="bg-[#1a1a1a] px-4 py-2 border-t border-[#262626] flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <span class="text-[9px] text-gray-500 flex items-center gap-1"><kbd class="bg-[#262626] px-1 rounded text-gray-400 border border-white/5">ESC</kbd> to close</span>
+                </div>
+                <ApplicationLogo size="sm" :show-name="false" class="opacity-20" />
+            </div>
+        </div>
       </div>
 
       <div class="flex items-center gap-8">

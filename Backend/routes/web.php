@@ -29,6 +29,8 @@ Route::get('/dashboard', function () {
 Route::get('/docs/{appSlug}/{docSlug?}', [\App\Http\Controllers\DocumentationController::class, 'show'])
     ->name('app.show.doc');
 
+Route::get('/api/search/docs', [\App\Http\Controllers\DocumentationController::class, 'search'])->name('docs.search');
+
 Route::middleware('auth')->group(function () {
     Route::resource('documents', \App\Http\Controllers\User\DocumentController::class)->names('user.documents');
     Route::get('documents/{document}/sections', [\App\Http\Controllers\User\DocumentSectionController::class, 'index'])->name('user.sections.index');

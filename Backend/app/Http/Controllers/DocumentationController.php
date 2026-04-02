@@ -83,6 +83,36 @@ class DocumentationController extends Controller
         ]);
     }
 
+    public function search(Request $request)
+    {
+        $query = $request->get('query');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $results = Document::where('status', 'published')
+            ->where(function($q) use ($query) {
+                $q->where('title', 'like', "%{$query}%")
+                  ->orWhere('content', 'like', "%{$query}%");
+            })
+            ->with('application')
+            ->limit(8)
+            ->get()
+            ->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'title' => $doc->title,
+                    'slug' => $doc->slug,
+                    'app_name' => $doc->application->name,
+                    'app_slug' => $doc->application->slug,
+                    'app_color' => $doc->application->color ?? 'bg-indigo-500',
+                ];
+            });
+
+        return response()->json($results);
+    }
+
     private function makeAnchor(string $text): string
     {
         return strtolower(trim(preg_replace('/[^A-Za-z0-9]+/', '-', $text), '-'));
