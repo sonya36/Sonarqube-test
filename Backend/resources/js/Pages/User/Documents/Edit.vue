@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { 
   FileText, Save, ArrowLeft, Loader2, LayoutGrid, Users, Layers
 } from 'lucide-vue-next'
+import RichEditor from '@/Components/RichEditor.vue'
 import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 
@@ -138,16 +139,12 @@ const submit = () => {
           </div>
 
           <div class="space-y-2">
-              <label class="text-sm font-bold text-gray-300 flex items-center justify-between">
-                  Content (Markdown)
-                  <span class="text-xs text-gray-500 font-normal border border-[#262626] bg-[#1a1a1a] px-2 py-0.5 rounded">Supports Markdown</span>
+              <label class="text-sm font-bold text-gray-300">
+                  Content
               </label>
-              <textarea 
+              <RichEditor 
                   v-model="form.content" 
-                  rows="15" 
-                  required
-                  class="w-full bg-[#1a1a1a] border-[#262626] rounded-xl px-4 py-3 text-sm text-gray-300 placeholder-gray-600 focus:border-indigo-500 focus:ring-indigo-500 font-mono transition-all"
-              ></textarea>
+              />
               <div v-if="form.errors.content" class="text-red-400 text-xs mt-1">{{ form.errors.content }}</div>
           </div>
 

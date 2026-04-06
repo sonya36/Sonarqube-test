@@ -2,6 +2,7 @@
 import DocsLayout from '@/Layouts/DocsLayout.vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import { ArrowLeft, Plus, Trash2, GripVertical, Save, Loader2, ChevronDown, ChevronUp, Pencil, LayoutGrid, Users, Layers, FileText } from 'lucide-vue-next'
+import RichEditor from '@/Components/RichEditor.vue'
 import { ref, computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
@@ -156,8 +157,8 @@ const deleteSection = (sectionId: number) => {
               <div v-if="editForm.errors.sub_title" class="text-red-400 text-xs">{{ editForm.errors.sub_title }}</div>
             </div>
             <div class="space-y-2">
-              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Content <span class="text-gray-600 font-normal">(Markdown)</span></label>
-              <textarea v-model="editForm.content" rows="8" required class="w-full bg-[#161616] border-[#262626] rounded-xl px-4 py-3 text-sm text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 font-mono transition-all"></textarea>
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Content</label>
+              <RichEditor v-model="editForm.content" />
               <div v-if="editForm.errors.content" class="text-red-400 text-xs">{{ editForm.errors.content }}</div>
             </div>
             <div class="flex items-center gap-2 justify-end">
@@ -198,17 +199,13 @@ const deleteSection = (sectionId: number) => {
           </div>
 
           <div class="space-y-2">
-            <label class="text-sm font-bold text-gray-300 flex items-center justify-between">
+            <label class="text-sm font-bold text-gray-300">
               Content
-              <span class="text-xs text-gray-500 font-normal border border-[#262626] bg-[#1a1a1a] px-2 py-0.5 rounded">Supports Markdown</span>
             </label>
-            <textarea 
+            <RichEditor 
               v-model="addForm.content" 
-              rows="10" 
-              required
-              placeholder="Write the section content using Markdown..."
-              class="w-full bg-[#1a1a1a] border-[#262626] rounded-xl px-4 py-3 text-sm text-gray-300 placeholder-gray-600 focus:border-indigo-500 focus:ring-indigo-500 font-mono transition-all"
-            ></textarea>
+              placeholder="Write the section content..."
+            />
             <div v-if="addForm.errors.content" class="text-red-400 text-xs">{{ addForm.errors.content }}</div>
           </div>
 

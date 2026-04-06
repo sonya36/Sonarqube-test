@@ -93,13 +93,13 @@ onMounted(() => {
       </header>
 
       <!-- Main intro content -->
-      <div v-if="currentDocument.content" class="markdown-body" v-html="currentDocument.content" />
+      <div v-if="currentDocument.content" class="prose prose-invert max-w-none" v-html="currentDocument.content" />
 
       <!-- Sections -->
       <div v-for="section in sections" :key="section.id" class="space-y-4 scroll-mt-20" >
         <div :id="section.id" class="space-y-4 pt-8 border-t border-[#1a1a1a] scroll-mt-24">
           <h2 class="text-2xl font-bold text-white">{{ section.sub_title }}</h2>
-          <div class="markdown-body" v-html="section.content" />
+          <div class="prose prose-invert max-w-none" v-html="section.content" />
         </div>
       </div>
 
@@ -140,33 +140,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.markdown-body :deep(h2) {
-  font-size: 1.4rem; font-weight: 700; color: white;
-  margin-top: 1.75rem; margin-bottom: 0.75rem;
+/* Custom scroll behavior for smooth anchors */
+html {
+  scroll-behavior: smooth;
 }
-.markdown-body :deep(h3) {
-  font-size: 1.15rem; font-weight: 600; color: #e5e5e5;
-  margin-top: 1.25rem; margin-bottom: 0.5rem;
-}
-.markdown-body :deep(p) { color: #9ca3af; line-height: 1.8; margin-bottom: 1rem; }
-.markdown-body :deep(ul) { list-style-type: disc; padding-left: 1.5rem; color: #9ca3af; margin-bottom: 1rem; }
-.markdown-body :deep(ol) { list-style-type: decimal; padding-left: 1.5rem; color: #9ca3af; margin-bottom: 1rem; }
-.markdown-body :deep(li) { margin-bottom: 0.3rem; }
-.markdown-body :deep(a) { color: #818cf8; text-decoration: underline; }
-.markdown-body :deep(strong) { color: #e5e7eb; font-weight: 700; }
-.markdown-body :deep(blockquote) {
-  border-left: 3px solid #4f46e5; padding: 0.75rem 1rem;
-  font-style: italic; color: #d1d5db;
-  background: rgba(79,70,229,0.05); border-radius: 0.5rem; margin-bottom: 1rem;
-}
-.markdown-body :deep(pre) {
-  background: #161616; border: 1px solid #262626;
-  padding: 1rem; border-radius: 0.75rem; overflow-x: auto; margin-bottom: 1rem;
-}
-.markdown-body :deep(code) {
-  font-family: monospace; font-size: 0.875rem;
-  background: #262626; padding: 0.125rem 0.3rem; border-radius: 0.25rem;
-}
-.markdown-body :deep(pre code) { background: transparent; padding: 0; }
-.markdown-body :deep(hr) { border-color: #262626; margin: 2rem 0; }
 </style>
