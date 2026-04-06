@@ -3,12 +3,23 @@ import DocsLayout from '@/Layouts/DocsLayout.vue'
 import { Link } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
 import { ref, onMounted } from 'vue'
+import { Download, File, Paperclip, ArrowRight } from 'lucide-vue-next'
 
 const props = defineProps<{
     application: { id: number; name: string; slug: string; color?: string },
     documents: Array<{ id: number; title: string; slug: string; status: string }>,
     currentDocument: {
-        id: number; title: string; content: string; updated_at: string; status: string;
+        id: number; 
+        title: string; 
+        content: string; 
+        updated_at: string; 
+        status: string;
+        attachments: Array<{
+            id: number;
+            original_name: string;
+            file_size: number;
+            file_type: string;
+        }>;
     } | null,
     sections: Array<{ id: string; sub_title: string; content: string }>,
     toc: Array<{ id: string; title: string; level: number }>,
@@ -17,6 +28,14 @@ const props = defineProps<{
 const activeId = ref<string | null>(null)
 
 const formatDate = (d: string) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+
+const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
 
 const scrollTo = (id: string) => {
     const el = document.getElementById(id)
@@ -103,8 +122,46 @@ onMounted(() => {
         </div>
       </div>
 
+      <!-- Attachments Section -->
+      <div v-if="currentDocument.attachments.length > 0" class="pt-12 border-t border-[#262626] mt-12">
+        <div class="flex items-center gap-2 text-white mb-6">
+          <Paperclip class="w-5 h-5 text-indigo-400" />
+          <h3 class="text-xl font-bold">Resources & Attachments</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <a 
+            v-for="file in currentDocument.attachments" 
+            :key="file.id"
+            :href="route('user.attachments.download', file.id)"
+            target="_blank"
+            class="group flex items-center justify-between p-4 bg-[#16161a] border border-[#262626] rounded-2xl hover:border-indigo-500/50 transition-all shadow-sm"
+          >
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-500 group-hover:text-indigo-400 transition-colors overflow-hidden">
+                <img 
+                  v-if="['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(file.file_type.toLowerCase())" 
+                  :src="route('user.attachments.download', file.id)" 
+                  class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+                />
+                <File v-else-if="file.file_type === 'pdf'" class="w-5 h-5" />
+                <File v-else class="w-5 h-5" />
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="text-sm font-bold text-gray-200 group-hover:text-white truncate">{{ file.original_name }}</span>
+                <span class="text-[10px] font-medium text-gray-600 uppercase tracking-widest">{{ formatSize(file.file_size) }}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-indigo-400 font-bold text-xs opacity-0 group-hover:opacity-100 transition-all pr-2">
+              {{ file.file_type === 'pdf' || ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(file.file_type.toLowerCase()) ? 'View' : 'Download' }}
+              <Download v-if="!(['pdf'].includes(file.file_type.toLowerCase()) || ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(file.file_type.toLowerCase()))" class="w-4 h-4" />
+              <ArrowRight v-else class="w-4 h-4" />
+            </div>
+          </a>
+        </div>
+      </div>
+
       <!-- Empty sections state -->
-      <div v-if="sections.length === 0" class="py-10 text-center text-gray-600 border border-dashed border-[#262626] rounded-2xl">
+      <div v-if="sections.length === 0 && currentDocument.attachments.length === 0" class="py-10 text-center text-gray-600 border border-dashed border-[#262626] rounded-2xl">
         <p class="text-sm">No sections have been added to this document yet.</p>
       </div>
     </div>

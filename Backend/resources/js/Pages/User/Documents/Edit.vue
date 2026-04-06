@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import DocsLayout from '@/Layouts/DocsLayout.vue'
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import { cn } from '@/lib/utils'
 import { 
-  FileText, Save, ArrowLeft, Loader2, LayoutGrid, Users, Layers
+  FileText, Save, ArrowLeft, Loader2, LayoutGrid, Users, Layers,
+  Paperclip, Download, Trash2, File, AlertCircle, X
 } from 'lucide-vue-next'
 import RichEditor from '@/Components/RichEditor.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 
 const page = usePage()
@@ -20,6 +21,13 @@ const props = defineProps<{
     application_id: number;
     content: string;
     status: string;
+    attachments: Array<{
+        id: number;
+        original_name: string;
+        file_size: number;
+        file_type: string;
+        created_at: string;
+    }>;
   };
   assignableApplications: Array<{ id: number; name: string }>;
 }>()
@@ -31,6 +39,47 @@ const form = useForm({
     status: props.document.status || 'draft',
     content: props.document.content || ''
 })
+
+const uploadForm = useForm({
+    file: null as File | null,
+})
+
+const fileInput = ref<HTMLInputElement | null>(null)
+
+const submit = () => {
+    form.put(route('user.documents.update', props.document.id))
+}
+
+const onFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    if (target.files?.length) {
+        uploadForm.file = target.files[0]
+        uploadAttachments()
+    }
+}
+
+const uploadAttachments = () => {
+    uploadForm.post(route('user.attachments.store', props.document.id), {
+        onSuccess: () => {
+            uploadForm.reset()
+            if (fileInput.value) fileInput.value.value = ''
+        }
+    })
+}
+
+const deleteAttachment = (id: number) => {
+    if (confirm('Are you sure you want to remove this attachment?')) {
+        router.delete(route('user.attachments.destroy', id))
+    }
+}
+
+const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
 
 const userMenu = computed(() => {
   if (user.value?.role === 'admin') {
@@ -47,10 +96,6 @@ const userMenu = computed(() => {
     { name: 'My Documents', icon: FileText, active: true, href: route('user.documents.index') }
   ]
 })
-
-const submit = () => {
-    form.put(route('user.documents.update', props.document.id))
-}
 </script>
 
 <template>
@@ -163,6 +208,105 @@ const submit = () => {
               </button>
           </div>
       </form>
+
+      <!-- Attachments Section -->
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl overflow-hidden shadow-2xl">
+          <div class="p-8 border-b border-[#262626] flex items-center justify-between bg-[#1a1a1a]/50">
+              <div>
+                  <h2 class="text-xl font-bold text-white mb-1">Attachments</h2>
+                  <p class="text-gray-500 text-sm">Add supporting files, PDFs, or images to this document.</p>
+              </div>
+              <div class="relative">
+                  <input 
+                      type="file" 
+                      ref="fileInput"
+                      class="hidden" 
+                      @change="onFileChange"
+                  >
+                  <button 
+                      @click="fileInput?.click()"
+                      :disabled="uploadForm.processing"
+                      class="flex items-center gap-2 px-4 py-2 bg-white/5 border border-[#262626] text-white rounded-xl text-xs font-bold hover:bg-white/10 transition-all disabled:opacity-50"
+                  >
+                      <div v-if="uploadForm.processing" class="flex items-center gap-2">
+                          <Loader2 class="w-3 h-3 animate-spin" />
+                          Uploading...
+                      </div>
+                      <div v-else class="flex items-center gap-2">
+                          <Paperclip class="w-3 h-3" />
+                          Add File
+                      </div>
+                  </button>
+              </div>
+          </div>
+
+          <div v-if="uploadForm.progress" class="px-8 py-4 bg-indigo-500/5 border-b border-[#262626]">
+               <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Uploading File...</span>
+                  <span class="text-[10px] font-bold text-indigo-400">{{ uploadForm.progress.percentage }}%</span>
+               </div>
+               <div class="w-full h-1 bg-[#262626] rounded-full overflow-hidden">
+                  <div 
+                      class="h-full bg-indigo-500 transition-all duration-300"
+                      :style="`width: ${uploadForm.progress.percentage}%`"
+                  />
+               </div>
+          </div>
+
+          <div class="p-8">
+              <div v-if="props.document.attachments.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div 
+                      v-for="file in props.document.attachments" 
+                      :key="file.id"
+                      class="group bg-[#1a1a1a] border border-[#262626] p-4 rounded-2xl flex items-center justify-between hover:border-indigo-500/30 transition-all"
+                  >
+                      <div class="flex items-center gap-4 min-w-0">
+                          <div class="w-10 h-10 rounded-xl bg-[#16161a] border border-[#262626] flex items-center justify-center text-gray-500 group-hover:text-indigo-400 transition-colors overflow-hidden">
+                              <img 
+                                  v-if="['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(file.file_type.toLowerCase())" 
+                                  :src="route('user.attachments.download', file.id)" 
+                                  class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+                              />
+                              <File v-else-if="file.file_type === 'pdf'" class="w-5 h-5" />
+                              <File v-else class="w-5 h-5" />
+                          </div>
+                          <div class="flex flex-col min-w-0">
+                              <span class="text-sm font-bold text-white truncate pr-4">{{ file.original_name }}</span>
+                              <div class="flex items-center gap-2 text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                                  <span>{{ formatSize(file.file_size) }}</span>
+                                  <span>•</span>
+                                  <span>{{ file.created_at }}</span>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <a 
+                              :href="route('user.attachments.download', file.id)" 
+                              target="_blank"
+                              class="p-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-all"
+                              title="View / Download"
+                          >
+                              <ImageIcon v-if="['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(file.file_type.toLowerCase())" class="w-4 h-4" />
+                              <File v-else-if="file.file_type === 'pdf'" class="w-4 h-4" />
+                              <Download v-else class="w-4 h-4" />
+                          </a>
+                          <button 
+                              @click="deleteAttachment(file.id)"
+                              class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                              title="Remove"
+                          >
+                              <Trash2 class="w-4 h-4" />
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              <div v-else class="flex flex-col items-center justify-center py-12 text-gray-600 border-2 border-dashed border-[#262626] rounded-2xl">
+                  <Paperclip class="w-10 h-10 mb-3 opacity-20" />
+                  <p class="text-sm font-medium">No attachments yet.</p>
+                  <p class="text-xs">Upload supplementary files for this documentation.</p>
+              </div>
+          </div>
+      </div>
     </div>
   </DocsLayout>
 </template>

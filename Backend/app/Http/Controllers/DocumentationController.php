@@ -77,6 +77,12 @@ class DocumentationController extends Controller
                 'content'    => $mainContent,
                 'updated_at' => $document->updated_at,
                 'status'     => $document->status,
+                'attachments' => $document->attachments->map(fn($a) => [
+                    'id' => $a->id,
+                    'original_name' => $a->original_name,
+                    'file_size' => $a->file_size,
+                    'file_type' => $a->file_type,
+                ]),
             ],
             'sections'        => $renderedSections,
             'toc'             => $toc,

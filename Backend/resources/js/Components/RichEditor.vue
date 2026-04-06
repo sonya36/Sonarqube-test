@@ -3,12 +3,14 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
+import Image from '@tiptap/extension-image'
 import { 
   Bold, Italic, Underline as UnderlineIcon, List, ListOrdered, 
   Quote, Code, Heading1, Heading2, Link as LinkIcon, Unlink,
-  Undo, Redo
+  Undo, Redo, Image as ImageIcon, Loader2
 } from 'lucide-vue-next'
-import { watch, onBeforeUnmount } from 'vue'
+import { watch, onBeforeUnmount, ref } from 'vue'
+import axios from 'axios'
 
 const props = defineProps<{
   modelValue: string;
@@ -16,6 +18,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['update:modelValue'])
+const isUploading = ref(false)
 
 const editor = useEditor({
   content: props.modelValue,
@@ -25,10 +28,39 @@ const editor = useEditor({
     Link.configure({
       openOnClick: false,
     }),
+    Image.configure({
+      allowBase64: true,
+      HTMLAttributes: {
+        class: 'rounded-xl border border-[#262626] max-w-full my-4 shadow-lg mx-auto block',
+      },
+    }),
   ],
   editorProps: {
+    handlePaste(view, event) {
+        const items = Array.from(event.clipboardData?.items || [])
+        const imageItem = items.find(item => item.type.startsWith('image'))
+
+        if (imageItem) {
+            const file = imageItem.getAsFile()
+            if (file) {
+                uploadImage(file)
+                return true // Handled
+            }
+        }
+        return false // Default behavior for other items
+    },
+    handleDrop(view, event, slice, moved) {
+        if (!moved && event.dataTransfer?.files.length) {
+            const file = event.dataTransfer.files[0]
+            if (file.type.startsWith('image')) {
+                uploadImage(file)
+                return true
+            }
+        }
+        return false
+    },
     attributes: {
-      class: 'prose prose-invert max-w-none focus:outline-none min-h-[200px] p-5 text-sm text-gray-300',
+      class: 'prose prose-invert max-w-none focus:outline-none min-h-[350px] p-8 text-sm text-gray-300',
     },
   },
   onUpdate: ({ editor }) => {
@@ -36,6 +68,7 @@ const editor = useEditor({
   },
 })
 
+// Sync internal editor content with prop changes
 watch(() => props.modelValue, (value) => {
   if (editor.value && editor.value.getHTML() !== value) {
     editor.value.commands.setContent(value, false)
@@ -45,6 +78,46 @@ watch(() => props.modelValue, (value) => {
 onBeforeUnmount(() => {
   editor.value?.destroy()
 })
+
+const uploadImage = async (file: File) => {
+    isUploading.value = true
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        const response = await axios.post(route('media.upload'), formData, {
+            headers: {
+                'X-CSRF-TOKEN': token || '',
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        
+        if (response.data && response.data.url) {
+            editor.value?.chain().focus().setImage({ src: response.data.url }).run()
+        } else {
+            throw new Error('Invalid response format')
+        }
+    } catch (error: any) {
+        console.error('Image upload failed:', error)
+        const message = error.response?.data?.message || error.message || 'Check your internet connection.'
+        alert(`Failed to upload image: ${message}`)
+    } finally {
+        isUploading.value = false
+    }
+}
+
+const addImage = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = (e: any) => {
+        if (e.target.files.length) {
+            uploadImage(e.target.files[0])
+        }
+    }
+    input.click()
+}
 
 const setLink = () => {
   const previousUrl = editor.value?.getAttributes('link').href
@@ -150,6 +223,17 @@ const setLink = () => {
 
       <button 
         type="button"
+        @click="addImage"
+        :disabled="isUploading"
+        class="p-2 rounded-lg hover:bg-white/5 transition-all text-gray-400 disabled:opacity-30"
+        title="Insert Image"
+      >
+        <Loader2 v-if="isUploading" class="w-4 h-4 animate-spin text-indigo-400" />
+        <ImageIcon v-else class="w-4 h-4" />
+      </button>
+
+      <button 
+        type="button"
         @click="setLink"
         :class="['p-2 rounded-lg hover:bg-white/5 transition-all', editor.isActive('link') ? 'text-indigo-400 bg-indigo-500/10' : 'text-gray-400']"
         title="Add Link"
@@ -231,6 +315,9 @@ const setLink = () => {
   border-radius: 0 0.5rem 0.5rem 0;
   margin-left: 0;
   margin-right: 0;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
 }
 
 /* Placeholder styling */
@@ -247,5 +334,10 @@ const setLink = () => {
     color: #818cf8;
     text-decoration: underline;
     cursor: pointer;
+}
+
+/* Image styling */
+.ProseMirror img {
+    @apply rounded-2xl border border-[#262626] mx-auto block shadow-2xl transition-all hover:scale-[1.01];
 }
 </style>

@@ -143,6 +143,13 @@ class DocumentController extends Controller
                 'application_id' => $document->application_id,
                 'content' => $document->content,
                 'status' => $document->status,
+                'attachments' => $document->attachments()->get()->map(fn($a) => [
+                    'id' => $a->id,
+                    'original_name' => $a->original_name,
+                    'file_size' => $a->file_size,
+                    'file_type' => $a->file_type,
+                    'created_at' => $a->created_at->diffForHumans(),
+                ]),
             ],
             'assignableApplications' => $applications->map(fn($app) => ['id' => $app->id, 'name' => $app->name])
         ]);

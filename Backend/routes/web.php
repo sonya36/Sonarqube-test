@@ -29,7 +29,9 @@ Route::get('/dashboard', function () {
 Route::get('/docs/{appSlug}/{docSlug?}', [\App\Http\Controllers\DocumentationController::class, 'show'])
     ->name('app.show.doc');
 
+# ... (existing search route)
 Route::get('/api/search/docs', [\App\Http\Controllers\DocumentationController::class, 'search'])->name('docs.search');
+Route::get('/attachments/{attachment}/download', [\App\Http\Controllers\User\DocumentAttachmentController::class, 'download'])->name('user.attachments.download');
 
 Route::middleware('auth')->group(function () {
     Route::resource('documents', \App\Http\Controllers\User\DocumentController::class)->names('user.documents');
@@ -37,6 +39,13 @@ Route::middleware('auth')->group(function () {
     Route::post('documents/{document}/sections', [\App\Http\Controllers\User\DocumentSectionController::class, 'store'])->name('user.sections.store');
     Route::put('documents/{document}/sections/{section}', [\App\Http\Controllers\User\DocumentSectionController::class, 'update'])->name('user.sections.update');
     Route::delete('documents/{document}/sections/{section}', [\App\Http\Controllers\User\DocumentSectionController::class, 'destroy'])->name('user.sections.destroy');
+    
+    // Attachments
+    Route::post('documents/{document}/attachments', [\App\Http\Controllers\User\DocumentAttachmentController::class, 'store'])->name('user.attachments.store');
+    Route::delete('attachments/{attachment}', [\App\Http\Controllers\User\DocumentAttachmentController::class, 'destroy'])->name('user.attachments.destroy');
+
+    // Media (Editor)
+    Route::post('/media/upload', [\App\Http\Controllers\MediaController::class, 'upload'])->name('media.upload');
 
     Route::get('/admin', [AdminDashboardController::class, 'index'])->middleware('admin')->name('admin.dashboard');
     Route::resource('admin/users', \App\Http\Controllers\Admin\UserController::class)->middleware('admin')->names('admin.users');

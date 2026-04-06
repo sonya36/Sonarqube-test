@@ -8,6 +8,10 @@ class DocumentAttachment extends Model
 {
     public $timestamps = false; // Using custom created_at timestamp in migration
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     protected $fillable = [
         'document_id',
         'uploaded_by',
