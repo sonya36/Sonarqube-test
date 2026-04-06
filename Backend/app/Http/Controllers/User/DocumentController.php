@@ -15,9 +15,13 @@ class DocumentController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $appIds = $user->applications()->pluck('applications.id');
+        
+        $query = Document::with(['application', 'user', 'updater']);
 
-        $query = Document::whereIn('application_id', $appIds)->with(['application', 'user', 'updater']);
+        // Admin sees all documents, standard users see only their own
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
 
         if ($request->has('search')) {
             $search = $request->get('search');
@@ -46,12 +50,18 @@ class DocumentController extends Controller
             ];
         });
 
+        // Stats should also reflect visibility
+        $statsQuery = Document::query();
+        if (!$user->isAdmin()) {
+            $statsQuery->where('user_id', $user->id);
+        }
+
         return Inertia::render('User/Documents/Index', [
             'documents' => $documents,
             'stats' => [
-                'total' => Document::whereIn('application_id', $appIds)->count(),
-                'published' => Document::whereIn('application_id', $appIds)->where('status', 'published')->count(),
-                'draft' => Document::whereIn('application_id', $appIds)->where('status', 'draft')->count(),
+                'total' => (clone $statsQuery)->count(),
+                'published' => (clone $statsQuery)->where('status', 'published')->count(),
+                'draft' => (clone $statsQuery)->where('status', 'draft')->count(),
             ],
             'filters' => $request->only(['search']),
         ]);
@@ -106,6 +116,10 @@ class DocumentController extends Controller
         }
 
         Document::create($validated);
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.documents.index')->with('success', 'Document created successfully.');
+        }
 
         return redirect()->route('user.documents.index')->with('success', 'Document created successfully.');
     }
@@ -168,6 +182,10 @@ class DocumentController extends Controller
         }
 
         $document->update($validated);
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.documents.index')->with('success', 'Document updated successfully.');
+        }
 
         return redirect()->route('user.documents.index')->with('success', 'Document updated successfully.');
     }
