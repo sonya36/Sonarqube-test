@@ -15,13 +15,24 @@ class DocumentController extends Controller
      */
     public function index(Request $request)
     {
+        $status = $request->get('status');
+        
         $query = Document::with(['application', 'user', 'updater']);
 
-        // Basic search if needed later
+        // Handle Trashed items
+        if ($status === 'trashed') {
+            $query->onlyTrashed();
+        } else if ($status) {
+            $query->where('status', $status);
+        }
+
+        // Basic search
         if ($request->has('search')) {
             $search = $request->get('search');
-            $query->where('title', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
                   ->orWhere('slug', 'like', "%{$search}%");
+            });
         }
 
         $documents = $query->latest()->paginate(10)->through(function ($doc) {
@@ -32,7 +43,7 @@ class DocumentController extends Controller
                 'application' => $doc->application ? [
                     'name' => $doc->application->name,
                     'slug' => $doc->application->slug,
-                    'color' => $doc->application->color ?? 'bg-indigo-500',
+                    'color' => $doc->application->color ?? 'indigo',
                 ] : null,
                 'author' => $doc->user ? $doc->user->name : 'Unknown',
                 'updater' => $doc->updater ? $doc->updater->name : null,
@@ -40,6 +51,7 @@ class DocumentController extends Controller
                 'version' => $doc->version,
                 'view_count' => $doc->view_count,
                 'updated_at' => $doc->updated_at->diffForHumans(),
+                'deleted_at' => $doc->deleted_at ? $doc->deleted_at->diffForHumans() : null,
             ];
         });
 
@@ -50,9 +62,31 @@ class DocumentController extends Controller
                 'published' => Document::where('status', 'published')->count(),
                 'draft' => Document::where('status', 'draft')->count(),
                 'archived' => Document::where('status', 'archived')->count(),
+                'trashed' => Document::onlyTrashed()->count(),
             ],
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'status']),
         ]);
+    }
+
+    /**
+     * Archive the specified document.
+     */
+    public function archive(Document $document)
+    {
+        $document->update(['status' => 'archived']);
+
+        return redirect()->back()->with('success', 'Document archived successfully.');
+    }
+
+    /**
+     * Restore a soft-deleted document.
+     */
+    public function restore($id)
+    {
+        $document = Document::withTrashed()->findOrFail($id);
+        $document->restore();
+
+        return redirect()->back()->with('success', 'Document restored successfully.');
     }
 
     /**
@@ -62,6 +96,17 @@ class DocumentController extends Controller
     {
         $document->delete();
 
-        return redirect()->back()->with('success', 'Document deleted successfully.');
+        return redirect()->back()->with('success', 'Document moved to trash.');
+    }
+
+    /**
+     * Permanently delete a document.
+     */
+    public function forceDelete($id)
+    {
+        $document = Document::withTrashed()->findOrFail($id);
+        $document->forceDelete();
+
+        return redirect()->back()->with('success', 'Document permanently deleted.');
     }
 }

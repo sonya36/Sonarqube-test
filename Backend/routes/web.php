@@ -41,6 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin', [AdminDashboardController::class, 'index'])->middleware('admin')->name('admin.dashboard');
     Route::resource('admin/users', \App\Http\Controllers\Admin\UserController::class)->middleware('admin')->names('admin.users');
     Route::resource('admin/applications', \App\Http\Controllers\Admin\ApplicationController::class)->middleware('admin')->names('admin.applications');
+    Route::post('admin/documents/{document}/archive', [\App\Http\Controllers\Admin\DocumentController::class, 'archive'])->middleware('admin')->name('admin.documents.archive');
+    Route::post('admin/documents/{document}/restore', [\App\Http\Controllers\Admin\DocumentController::class, 'restore'])->middleware('admin')->name('admin.documents.restore');
+    Route::delete('admin/documents/{document}/force-delete', [\App\Http\Controllers\Admin\DocumentController::class, 'forceDelete'])->middleware('admin')->name('admin.documents.force-delete');
     Route::resource('admin/documents', \App\Http\Controllers\Admin\DocumentController::class)->middleware('admin')->names('admin.documents');
     
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

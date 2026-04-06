@@ -16,6 +16,7 @@ import {
   CalendarDays,
   Clock
 } from 'lucide-vue-next'
+import AdminChart from '@/Components/Admin/AdminChart.vue'
 import { ref, computed } from 'vue'
 
 const page = usePage()
@@ -29,6 +30,7 @@ const props = defineProps<{
     uptime: string;
   };
   docsPerApp: Array<{ label: string; count: number; color?: string }>;
+  docStatusDistribution: Record<string, number>;
   recentDocuments: Array<{
     id: number;
     title: string;
@@ -57,14 +59,62 @@ const stats = [
   { name: 'System Uptime', value: props.stats.uptime, change: 'All services operational', icon: Activity },
 ]
 
-// Normalize chart data for 100% scale
-const maxDocs = Math.max(...props.docsPerApp.map(d => d.count), 1)
-const chartData = props.docsPerApp.map(d => ({
-  label: d.label,
-  value: (d.count / maxDocs) * 100,
-  count: d.count,
-  color: d.color
-}))
+// Bar Chart Data (Documents per Application)
+const barChartData = computed(() => ({
+    labels: props.docsPerApp.map(d => d.label),
+    datasets: [{
+        label: 'Documents',
+        data: props.docsPerApp.map(d => d.count),
+        backgroundColor: props.docsPerApp.map(d => {
+            const colorMap: Record<string, string> = {
+                indigo: '#6366f1',
+                red: '#ef4444',
+                emerald: '#10b981',
+                orange: '#f59e0b',
+                blue: '#3b82f6',
+            };
+            return colorMap[d.color || 'indigo'] || '#6366f1';
+        }),
+        borderRadius: 8,
+        borderSkipped: false,
+    }]
+}));
+
+// Doughnut Chart Data (Document Status)
+const doughnutChartData = computed(() => ({
+    labels: Object.keys(props.docStatusDistribution),
+    datasets: [{
+        data: Object.values(props.docStatusDistribution),
+        backgroundColor: [
+            '#10b981', // Published (Emerald)
+            '#f59e0b', // Draft (Orange)
+            '#374151', // Archived (Gray-700)
+        ],
+        borderWidth: 0,
+        hoverOffset: 15,
+        cutout: '70%',
+    }]
+}));
+
+const barChartOptions = {
+    scales: {
+        y: {
+            beginAtZero: true,
+            grid: { color: '#262626', drawBorder: false },
+            ticks: { color: '#6b7280', font: { size: 10, weight: 'bold' } }
+        },
+        x: {
+            grid: { display: false },
+            ticks: { color: '#6b7280', font: { size: 10, weight: 'bold' } }
+        }
+    }
+};
+
+const doughnutChartOptions = {
+    plugins: {
+        legend: { display: false },
+    }
+};
 </script>
 
 <template>
@@ -154,87 +204,109 @@ const chartData = props.docsPerApp.map(d => ({
       <!-- Main Visual Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-7 gap-6">
         <!-- Documents Per Application Chart -->
-        <div class="lg:col-span-4 bg-[#161616] border border-[#262626] rounded-3xl p-6">
+        <div class="lg:col-span-4 bg-[#161616] border border-[#262626] rounded-3xl p-6 flex flex-col">
           <div class="flex items-center justify-between mb-8">
             <div>
                 <h3 class="text-sm font-bold text-white mb-1">Documents per Application</h3>
                 <p class="text-[10px] text-gray-500">Distribution across major system modules</p>
             </div>
-            <Layers class="w-4 h-4 text-gray-600" />
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-500/10 text-[9px] font-bold text-indigo-400 border border-indigo-500/20">
+                    <Activity class="w-3 h-3" />
+                    Live Data
+                </div>
+            </div>
           </div>
           
-          <div class="h-[250px] w-full flex items-end justify-between gap-4 px-2">
-            <div 
-              v-for="item in chartData" 
-              :key="item.label"
-              class="flex-1 h-full flex flex-col items-center gap-3 group"
-            >
-              <div class="relative w-full flex-1 flex items-end justify-center pt-8">
-                  <div 
-                    class="w-full max-w-[40px] transition-all rounded-t-lg relative"
-                    :class="`bg-${item.color || 'indigo'}-500/20 group-hover:bg-${item.color || 'indigo'}-500`"
-                    :style="{ height: `${item.value}%` }"
-                  >
-                     <div 
-                        class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-white text-[9px] font-bold px-1.5 py-0.5 rounded pointer-events-none"
-                        :class="`bg-${item.color || 'indigo'}-600`"
-                     >
-                         {{ item.count }}
-                     </div>
-                  </div>
-              </div>
-              <span class="text-[10px] font-bold text-gray-500 group-hover:text-white transition-colors">{{ item.label }}</span>
-            </div>
+          <div class="flex-1 min-h-[300px]">
+             <AdminChart 
+               type="bar" 
+               :data="barChartData" 
+               :options="barChartOptions" 
+             />
           </div>
         </div>
 
-        <!-- Recent Documents -->
-        <div class="lg:col-span-3 bg-[#161616] border border-[#262626] rounded-3xl p-6">
-          <div class="mb-6">
-            <h3 class="text-sm font-bold text-white mb-1">Recent Documents</h3>
-            <p class="text-xs text-gray-500">Latest updates across all applications.</p>
+        <!-- Document Status Distribution -->
+        <div class="lg:col-span-3 bg-[#161616] border border-[#262626] rounded-3xl p-6 flex flex-col">
+          <div class="mb-8">
+            <h3 class="text-sm font-bold text-white mb-1">Document Status</h3>
+            <p class="text-[10px] text-gray-500">Current lifecycle distribution</p>
           </div>
 
-          <div class="space-y-6">
-            <div 
-              v-for="doc in props.recentDocuments" 
-              :key="doc.id"
-              class="flex items-center justify-between group cursor-pointer"
-            >
-              <div class="flex items-center gap-3">
-                <div 
-                    class="w-9 h-9 rounded-xl bg-[#1a1a1a] border border-[#262626] flex items-center justify-center transition-all shadow-inner group-hover:scale-110"
-                    :class="`text-${doc.appColor}-400 group-hover:border-${doc.appColor}-500/50`"
-                >
-                  <FileText class="w-4 h-4" />
-                </div>
-                <div class="flex flex-col">
-                  <span class="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">{{ doc.title }}</span>
-                  <div class="flex items-center gap-2 text-[10px] text-gray-500">
-                      <span class="font-bold transition-colors" :class="`text-${doc.appColor}-500/70 group-hover:text-${doc.appColor}-400`">{{ doc.app }}</span>
-                      <span>•</span>
-                      <span>{{ doc.author }}</span>
-                  </div>
+          <div class="flex-1 flex flex-col items-center justify-center relative min-h-[220px]">
+             <div class="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                <span class="text-2xl font-black text-white line-height-none">{{ props.stats.totalDocuments }}</span>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total</span>
+             </div>
+             <AdminChart 
+               type="doughnut" 
+               :data="doughnutChartData" 
+               :options="doughnutChartOptions" 
+             />
+          </div>
+
+          <div class="mt-6 grid grid-cols-3 gap-2">
+              <div v-for="(count, label) in props.docStatusDistribution" :key="label" class="bg-[#1a1a1a] border border-[#262626] p-2 rounded-xl flex flex-col items-center">
+                  <span class="text-[9px] font-bold text-gray-500 uppercase mb-1">{{ label }}</span>
+                  <span class="text-xs font-black text-white">{{ count }}</span>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Documents Section -->
+      <div class="bg-[#161616] border border-[#262626] rounded-3xl p-8">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <h3 class="text-lg font-bold text-white mb-1">Recent Document Activity</h3>
+            <p class="text-sm text-gray-500">The latest documentation updates from your team.</p>
+          </div>
+          <button class="px-4 py-2 rounded-xl bg-white/5 border border-[#262626] text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition-all">
+            View All Activity
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div 
+            v-for="doc in props.recentDocuments" 
+            :key="doc.id"
+            class="bg-[#1a1a1a] border border-[#262626] p-5 rounded-2xl group hover:border-indigo-500/30 transition-all cursor-pointer relative overflow-hidden"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <div 
+                  class="w-10 h-10 rounded-xl bg-[#161616] border border-[#262626] flex items-center justify-center transition-all group-hover:scale-110 shadow-lg"
+                  :class="`text-${doc.appColor}-400 group-hover:border-${doc.appColor}-500/50`"
+              >
+                <FileText class="w-5 h-5" />
+              </div>
+              <div :class="cn(
+                  'px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter shadow-sm',
+                  doc.status.toLowerCase() === 'published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
+              )">
+                  {{ doc.status }}
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <h4 class="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-1 mb-1">{{ doc.title }}</h4>
+                <div class="flex items-center gap-2 text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                    <span :class="cn(`text-${doc.appColor}-500`, 'font-bold text-[10px]')">{{ doc.app }}</span>
+                    <span>•</span>
+                    <span>{{ doc.author }}</span>
                 </div>
               </div>
-              <div class="flex flex-col items-end gap-1">
-                  <span class="text-[10px] font-bold text-gray-400 flex items-center gap-1">
-                      <Clock class="w-2.5 h-2.5" />
+              
+              <div class="pt-4 border-t border-[#262626] flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-gray-600 flex items-center gap-1.5 uppercase tracking-widest">
+                      <Clock class="w-3 h-3" />
                       {{ doc.time }}
                   </span>
-                  <div :class="cn(
-                      'px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter',
-                      doc.status.toLowerCase() === 'published' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'
-                  )">
-                      {{ doc.status }}
-                  </div>
+                  <ArrowUpRight class="w-3.5 h-3.5 text-gray-700 group-hover:text-indigo-400 transition-colors" />
               </div>
             </div>
           </div>
-
-          <button class="w-full mt-8 py-2.5 rounded-xl border border-[#262626] text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-            View all documents
-          </button>
         </div>
       </div>
     </div>
