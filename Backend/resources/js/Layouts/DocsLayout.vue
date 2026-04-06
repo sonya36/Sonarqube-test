@@ -5,6 +5,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3'
 import { Search, ChevronDown, Grid, Settings, LogOut, FileText, Loader2, CornerDownLeft } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import axios from 'axios'
+import ToastHandler from '@/Components/Common/ToastHandler.vue'
 
 const page = usePage()
 const isAppsOpen = ref(false)
@@ -61,6 +62,7 @@ const navApplications = computed(() => (page.props as any).applications ?? [])
 <template>
   <div class="min-h-screen bg-[#0f0f0f] text-[#ededed] font-['Inter',_sans-serif] selection:bg-indigo-500/30">
     <Head title="SILVER Documentations" />
+    <ToastHandler />
 
     <!-- Top Navigation Bar -->
     <header class="h-14 border-b border-[#262626] bg-[#0f0f0f]/80 backdrop-blur-md sticky top-0 z-50 px-6 flex items-center justify-between">
