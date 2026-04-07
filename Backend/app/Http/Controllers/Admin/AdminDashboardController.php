@@ -49,11 +49,11 @@ class AdminDashboardController extends Controller
                 'uptime' => '99.9%',
             ],
             'docsPerApp' => $applicationsData,
-            'docStatusDistribution' => [
-                'Published' => Document::where('status', 'published')->count(),
-                'Draft' => Document::where('status', 'draft')->count(),
-                'Archived' => Document::where('status', 'archived')->count(),
-            ],
+            'docStatusDistribution' => Document::selectRaw('status, count(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->mapWithKeys(fn($count, $status) => [ucfirst($status) => $count])
+                ->all(),
             'recentDocuments' => $recentDocuments,
         ]);
     }

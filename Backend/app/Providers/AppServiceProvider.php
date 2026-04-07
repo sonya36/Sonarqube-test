@@ -22,8 +22,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Vite::prefetch(concurrency: 3);
-
         Gate::define('access-admin', function (User $user) {
             return $user->isAdmin();
         });

@@ -43,7 +43,8 @@ class DocumentationController extends Controller
         // Increment view count
         $document->increment('view_count');
 
-        // Load sections ordered by sort_order
+        // Load sections and attachments
+        $document->load('attachments');
         $sections = $document->sections()->get();
 
         // Build TOC from sections' sub_titles
